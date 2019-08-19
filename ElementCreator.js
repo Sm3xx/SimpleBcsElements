@@ -49,6 +49,33 @@
 
 				if (options.css) this._element.style = options.css;
 
+				if (options.type) {
+					switch (options.type) {
+						case 'bcs_blue':
+							options.background = '#32a0e6';
+							options.text_color = '#fff';
+							options.color_gradient = true;
+							break;
+						case 'bcs_gray':
+							options.color_gradient = true;
+							options.background = 'transparent';
+							break;
+					}
+				}
+
+				if (options.text_color) this._element.style.color = options.text_color;
+
+				if (options.background) {
+					this._element.style.backgroundColor = options.background;
+				}
+
+				if (options.color_gradient === true && options.background === '#32a0e6') {
+					this._element.style.backgroundImage =
+						'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAgCAYAAAAv8DnQAAABIklEQVQ4EZVSCY4DIQyDER/bR/d5JWs7DpO2q0qLRhPjHDiB+fOIGAMfFtGcabknXkHWAaAQxD08XIAKYKSWStDBoEy7ZHqR9DkgxmKZGFtElmaES0oD3NNEGNNyTZhFUMQHZkBs/O+Kyu2aIfLLkga0dDIcmwp6m+Wwh2PQSGBTpAfDuAYH5XkOTnWlbq6IGlKnb7yYe0Si/sTF5IVl0B8a2nFIUEA2ZOUoV0JZ+ft7YEA2nOcd7BI87NJFEdXRZUX9+z28tSmR/FXf+aI5C5DiIXJj4J0oR1m0iVGHU1QOLm8pHC9qw29GrwuY1isHVaMj2TG2OqK4FIkTXJA8RN7XrZuH87wA4LWfW1fsI+E9SDi7sGzO4+M9kKxBMfcVj/ELI1PTxuT7jsEAAAAASUVORK5CYII=)';
+				} else if (options.background !== 'transparent') {
+					this._element.style.backgroundImage = 'none';
+				}
+
 				return this;
 			},
 
@@ -140,6 +167,34 @@
 		tr.appendChild(td);
 
 		return tr;
+	}
+
+	function lightenDarkenColor(col, amt){
+		var usePound = false;
+		if (col[0] == '#') {
+			col = col.slice(1);
+			usePound = true;
+		}
+
+		var num = parseInt(col, 16);
+
+		var r = (num >> 16) + amt;
+
+		if (r > 255) r = 255;
+		else if (r < 0) r = 0;
+
+		var b = ((num >> 8) & 0x00ff) + amt;
+
+		if (b > 255) b = 255;
+		else if (b < 0) b = 0;
+
+		var g = (num & 0x0000ff) + amt;
+
+		if (g > 255) g = 255;
+		else if (g < 0) g = 0;
+
+		console.log((usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16));
+		return (usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16);
 	}
 
 	BCS.newDropDownElement = function(settings){
