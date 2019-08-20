@@ -19,6 +19,20 @@
 		}
 	};
 
+	/**
+	 * Create a new Button
+	 * @param {Object} options Buttons Settings
+	 * @property {String} text Button Text
+	 * @property {String} helpText Help text of the button
+	 * @property {String} href Link that should be opend on click
+	 * @property {Function} onclick Click Handler
+	 * @property {String} css CSS String for styling the button
+	 * @property {String} type Type of the Button (bcs_blue, bcs_gray)
+	 * @property {String} background HEX Color code for background
+	 * @property {String} text_color HEX Color code for text
+	 * @property {Boolean} color_gradient Activate color gradient for the button
+	 * @returns {Object} Button Instance
+	 */
 	function Button(options){
 		const ITEM = {
 			_element: createButtonElements(),
@@ -97,10 +111,26 @@
 		return ITEM.setProperties(options);
 	}
 
+	/**
+	 * Create a new DropDown Menu element
+	 * @param {Object} options Settings for the Element
+	 * @property {String} text Text of the Button
+	 * @property {Boolean} seperated Create gray bar on top of element
+	 * @property {String} background HEX value of a color for the background
+	 * @property {String} icon URL to an Image to display
+	 * @property {Function} onclick Click Handler Function
+	 * @returns {Object} DropDownElement Instance
+	 */
 	function DropDownElement(options){
 		const ITEM = {
 			_element: createDropDownElements(),
 
+			/**
+			 * Set Properties of the Element
+			 * @private
+			 * @param {Object} options Settings Object
+			 * @returns {Object} 
+			 */
 			setProperties: function(options){
 				if (options.seperated) this._element.style = 'border-top: 1px solid rgb(230, 230, 230)';
 				if (options.text) this._element.querySelector('span').innerHTML = options.text;
@@ -122,6 +152,10 @@
 				return this;
 			},
 
+			/**
+			 * Set the button active/inactive
+			 * @param {Boolean} disabled Disabled boolean
+			 */
 			setDisabled: function(disabled){
 				if (disabled) this._element.querySelector('a').classList.add('disabled', 'dropDown');
 				else this._element.querySelector('a').classList.remove('disabled', 'dropDown');
@@ -134,6 +168,74 @@
 		return ITEM.setProperties(options);
 	}
 
+	/**
+	 * Create a new DropDownButton
+	 * @param {Object} options Settings for the Button
+	 * @property {String} text Text of the DropDown Button
+	 * @returns {Object} DropDownButtonElement Instance
+	 */
+	function DropDownButton(options){
+		const ITEM = {
+			_element: createDropDownButtonElements(),
+			_id: Math.random().toString(36).substring(7),
+
+			/**
+			 * Set the Properties of the Element
+			 * @private
+			 * @param {Object} options 
+			 */
+			setProperties: function(options){
+				if (options.text) this._element.innerHTML = options.text + this._element.innerHTML;
+				this._element.id = this._id;
+
+				return this;
+			},
+
+			/**
+			 * Set the menu to be opened on click
+			 * @param {Object} menu Menu Object
+			 */
+			setMenuToOpen: function(menu){
+				document.getElementsByTagName('form')[0].appendChild(menu._element);
+				this._element.setAttribute(
+					'onclick',
+					"return openSubMenu('" + menu.id + "', '" + this._id + "', null, null, null, event)"
+				);
+			}
+		};
+
+		Object.assign(ITEM, ELEMENT);
+		return ITEM.setProperties(options);
+	}
+
+	/**
+	 * Create new DropDownMenu
+	 */
+	function DropDownMenu(){
+		const MENU = {
+			_id: Math.random().toString(36).substring(7),
+			_element: createDropDownMenuElements(),
+
+			get id() {
+				return this._id;
+			},
+
+			/**
+			 * Add a new Element to the Menu
+			 * @param {Object} element DropDownElement Instance
+			 */
+			addElement: function(element){
+				const menu = this._element.querySelector('table table');
+				element.attachTo(menu).create();
+			}
+		};
+		MENU._element.id = MENU._id;
+		return MENU;
+	}
+
+	/**
+	 * Create all HTML elements for the Button
+	 */
 	function createButtonElements(){
 		const a = document.createElement('a');
 		a.className = 'hasNoSelectedRows';
@@ -144,6 +246,9 @@
 		return a;
 	}
 
+	/**
+	 * Create all HTML elemens for the DropDownElemnt
+	 */
 	function createDropDownElements(){
 		const tr = document.createElement('tr');
 
@@ -169,34 +274,50 @@
 		return tr;
 	}
 
-	function lightenDarkenColor(col, amt){
-		var usePound = false;
-		if (col[0] == '#') {
-			col = col.slice(1);
-			usePound = true;
-		}
+	/**
+	 * Create all HTML elements for the DropDown Button
+	 */
+	function createDropDownButtonElements(){
+		const a = document.createElement('a');
+		const img = document.createElement('img');
 
-		var num = parseInt(col, 16);
+		img.setAttribute('src', '/graphics/menu_arrow_down.png?t=19.1.29');
+		img.setAttribute('height', '13');
+		img.setAttribute('width', '17');
 
-		var r = (num >> 16) + amt;
-
-		if (r > 255) r = 255;
-		else if (r < 0) r = 0;
-
-		var b = ((num >> 8) & 0x00ff) + amt;
-
-		if (b > 255) b = 255;
-		else if (b < 0) b = 0;
-
-		var g = (num & 0x0000ff) + amt;
-
-		if (g > 255) g = 255;
-		else if (g < 0) g = 0;
-
-		console.log((usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16));
-		return (usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16);
+		a.appendChild(img);
+		a.className = 'submenu_openlink';
+		return a;
 	}
 
+	/**
+	 * Create all HTML elements for the DropDownMenu
+	 */
+	function createDropDownMenuElements(){
+		const div = document.createElement('div');
+		div.classList = 'submenu_layer layer_hidden';
+		div.style =
+			'left: 1721px;top: 154px;min-width: 150px;min-height: 1px;position: absolute;transform: translate3d(0px, 0px, 0px);';
+
+		const outerTable = document.createElement('table');
+		outerTable.className = 'rte_cleanable';
+
+		const outerTr = document.createElement('tr');
+		const outerTd = document.createElement('td');
+
+		const innerTable = document.createElement('table');
+		innerTable.className = 'rte_cleanable';
+		innerTable.style.float = 'left';
+
+		outerTd.appendChild(innerTable);
+		outerTr.appendChild(outerTd);
+		outerTable.appendChild(outerTr);
+		div.appendChild(outerTable);
+
+		return div;
+	}
+
+	// Adding all functions to the BCS Object
 	BCS.newDropDownElement = function(settings){
 		return DropDownElement(settings);
 	};
@@ -205,6 +326,15 @@
 		return Button(settings);
 	};
 
+	BCS.newDropDownButton = function(settings){
+		return DropDownButton(settings);
+	};
+
+	BCS.newDropDownMenu = function(settings){
+		return DropDownMenu(settings);
+	};
+
+	// Set the Style for disabled buttons
 	const style = document.createElement('style');
 	style.innerText =
 		'.disabled {background: #dedede !important; background-image: none !important; color: #a2a2a2 !important; box-shadow: none !important; cursor: default !important}' +
